@@ -1,0 +1,234 @@
+<!-- 喂食面板片段 -->
+<div class="nes-container with-title is-dark feed-card">
+    <p class="title">🍞 饲料仓库</p>
+    <div class="feed-amount"><span id="feedAmountValue">{{ profile.feed_grams }}</span><small>g</small></div>
+
+    {% if is_sleeping %}
+        <!-- 鸭鸭睡觉中 -->
+        <div class="sleep-notice">
+            <div class="sleep-notice-icon">🌙</div>
+            <p class="sleep-notice-title">鸭鸭已经睡着啦～</p>
+            <p class="sleep-notice-desc">
+                晚上 <strong>21:00</strong> 到早上 <strong>6:00</strong><br>
+                是鸭鸭的休息时间<br>
+                {{ sleep_countdown }} 后醒来 🦆
+            </p>
+            <div class="sleep-notice-hint">💭 嘘…别吵醒它哦</div>
+        </div>
+    {% else %}
+        <div class="feed-meta">一份饲料 = 180g，消化需 4 小时<br>🥚 消化完 2 份饲料 → 下一颗蛋</div>
+
+        {% if is_feeding %}
+            <div class="feeding-active">
+                <p>🕐 鸭鸭吃饭中...</p>
+                <div class="progress-bar-outer">
+                    <div class="progress-bar-inner" style="width:{{ progress }}%"></div>
+                </div>
+                <p class="progress-text">剩余约 <strong>{{ remaining_h|floatformat:1 }}</strong> 小时</p>
+                <div class="feed-accelerate-box">
+                    <div class="feed-accelerate-meta">
+                        <span>🎮 加速挑战</span>
+                        <strong>今日剩余 {{ feed_accelerations_left }} / {{ feed_accelerate_daily_limit }} 次</strong>
+                    </div>
+                    <button type="button" id="accelerateOpenBtn" class="nes-btn is-success btn-full"
+                            {% if feed_accelerations_left <= 0 %}disabled{% endif %}>
+                        通关小游戏加速 {{ feed_accelerate_hours }} 小时 + {{ feed_challenge_reward_grams }}g 饲料
+                    </button>
+                    {% if feed_accelerations_left <= 0 %}
+                        <p class="feed-accelerate-hint">今天的加速次数已经用完啦，明天再来挑战～</p>
+                    {% else %}
+                        <p class="feed-accelerate-hint">挑战成功后立即生效，并获得 {{ feed_challenge_reward_grams }}g 饲料。</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <form method="post" action="{% url 'feed' %}{% if current_scene != 'minghu' %}?scene={{ current_scene }}{% endif %}">
+                {% csrf_token %}
+                <button type="submit" class="nes-btn is-warning btn-full"
+                        {% if profile.feed_grams < 180 %}disabled{% endif %}>
+                    🍞 投喂 180g 饲料
+                </button>
+            </form>
+            {% if profile.feed_grams < 180 %}
+                <p class="hint-error">饲料不足！去社区分享照片获取 📷</p>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+</div>
+
+{% if is_feeding and not is_sleeping %}
+<div id="accelerateModal"
+     class="accelerate-modal"
+     hidden
+     aria-hidden="true"
+     data-accelerate-url="{% url 'accelerate_feed' %}"
+     data-scene="{{ current_scene }}"
+     style="display:none;">
+    {% csrf_token %}
+    <div class="accelerate-backdrop" data-accelerate-close></div>
+    <div class="accelerate-dialog" role="dialog" aria-modal="true" aria-label="加速挑战">
+        <button type="button" class="accelerate-close" data-accelerate-close aria-label="关闭">×</button>
+
+        <section class="accelerate-screen active" data-accelerate-screen="menu">
+            <div class="accelerate-head">
+                <h3>加速挑战</h3>
+                <p>选择一个小游戏，通关后本次进食加速 1 小时。</p>
+            </div>
+            <div class="accelerate-game-grid">
+                <button type="button" class="accelerate-game-card active" data-accelerate-game="snake">
+                    <span class="game-icon">🐍</span>
+                    <strong>贪吃蛇答题</strong>
+                    <small>已开放</small>
+                </button>
+                <button type="button" class="accelerate-game-card" data-accelerate-game="minesweeper">
+                    <span class="game-icon">💣</span>
+                    <strong>扫雷</strong>
+                    <small>已开放</small>
+                </button>
+                <button type="button" class="accelerate-game-card" data-accelerate-game="gomoku">
+                    <span class="game-icon">⚫</span>
+                    <strong>五子棋</strong>
+                    <small>已开放</small>
+                </button>
+            </div>
+            <div class="accelerate-actions">
+                <button type="button" id="gameRulesBtn" class="nes-btn is-warning">查看规则</button>
+            </div>
+        </section>
+
+        <section class="accelerate-screen" data-accelerate-screen="rules">
+            <div class="accelerate-head">
+                <h3>贪吃蛇答题规则</h3>
+                <p>窗口上方会出现判断题，请操控主面板上的贪吃蛇吃对应颜色的果子。</p>
+            </div>
+            <div class="snake-rules-card">
+                <p><strong>绿色果子</strong> = 正确</p>
+                <p><strong>红色果子</strong> = 错误</p>
+                <p>每题答对 +10 分，共 10 题，满分 100 分。</p>
+                <p>最终分数超过 60 分即挑战成功，可加速 1 小时，并获得 60g 饲料。</p>
+            </div>
+            <div class="accelerate-actions two">
+                <button type="button" class="nes-btn" data-accelerate-back>返回选择</button>
+                <button type="button" id="snakeStartBtn" class="nes-btn is-success">确定并开始</button>
+            </div>
+        </section>
+
+        <section class="accelerate-screen" data-accelerate-screen="minesweeper-rules">
+            <div class="accelerate-head">
+                <h3>扫雷规则</h3>
+                <p>按照经典扫雷玩法，避开所有地雷并翻开安全区域。</p>
+            </div>
+            <div class="snake-rules-card">
+                <p>棋盘为 <strong>9 × 9</strong>，一共有 <strong>10 颗雷</strong>。</p>
+                <p>左键点击翻开格子；右键点击可以插旗或取消插旗。</p>
+                <p>数字表示周围 8 个格子里有几颗雷。</p>
+                <p>翻开所有非雷格即挑战成功，可加速 1 小时，并获得 60g 饲料。</p>
+            </div>
+            <div class="accelerate-actions two">
+                <button type="button" class="nes-btn" data-accelerate-back>返回选择</button>
+                <button type="button" id="mineStartBtn" class="nes-btn is-success">确定并开始</button>
+            </div>
+        </section>
+
+        <section class="accelerate-screen" data-accelerate-screen="gomoku-rules">
+            <div class="accelerate-head">
+                <h3>五子棋规则</h3>
+                <p>和鸭鸭下一局五子棋，先连成五颗的一方获胜。</p>
+            </div>
+            <div class="snake-rules-card">
+                <p>棋盘为 <strong>15 × 15</strong>。</p>
+                <p>你执 <strong>黑棋</strong> 先手，鸭鸭执 <strong>白棋</strong> 后手。</p>
+                <p>横向、纵向或斜向连续五颗同色棋子即获胜。</p>
+                <p>战胜鸭鸭即挑战成功，可加速 1 小时，并获得 60g 饲料。</p>
+            </div>
+            <div class="accelerate-actions two">
+                <button type="button" class="nes-btn" data-accelerate-back>返回选择</button>
+                <button type="button" id="gomokuStartBtn" class="nes-btn is-success">确定并开始</button>
+            </div>
+        </section>
+
+        <section class="accelerate-screen" data-accelerate-screen="snake">
+            <div class="snake-game-head">
+                <div>
+                    <strong id="snakeRoundText">第 1 / 10 题</strong>
+                    <p id="snakeQuestionText">准备开始</p>
+                </div>
+                <div class="snake-score-box">
+                    <span>得分</span>
+                    <strong id="snakeScoreText">0</strong>
+                </div>
+            </div>
+            <div class="snake-legend">
+                <span><i class="green"></i>正确</span>
+                <span><i class="red"></i>错误</span>
+            </div>
+            <canvas id="snakeCanvas" class="snake-canvas" width="400" height="400"></canvas>
+            <div class="snake-mobile-controls" aria-label="方向控制">
+                <button type="button" data-snake-dir="up">↑</button>
+                <button type="button" data-snake-dir="left">←</button>
+                <button type="button" data-snake-dir="right">→</button>
+                <button type="button" data-snake-dir="down">↓</button>
+            </div>
+            <p class="snake-status" id="snakeStatusText">用方向键或 WASD 控制。</p>
+            <div class="accelerate-actions two">
+                {% csrf_token %}
+                <button type="button" class="nes-btn" data-accelerate-back>返回选择</button>
+                <button type="button" id="snakeRestartBtn" class="nes-btn is-warning">重新开始</button>
+            </div>
+        </section>
+
+        <section class="accelerate-screen" data-accelerate-screen="minesweeper">
+            <div class="mine-game-head">
+                <div>
+                    <strong>扫雷挑战</strong>
+                    <p>翻开所有安全格即可通关。右键插旗，手机可使用插旗模式。</p>
+                </div>
+                <div class="mine-counter-box">
+                    <span>剩余雷数</span>
+                    <strong id="mineCountText">10</strong>
+                </div>
+            </div>
+            <div class="mine-toolbar">
+                <button type="button" id="mineFlagModeBtn" class="mine-flag-toggle" aria-pressed="false">插旗模式</button>
+                <span id="mineStatusText">准备开始</span>
+            </div>
+            <div id="mineGrid" class="mine-grid" aria-label="扫雷棋盘"></div>
+            <div class="accelerate-actions two">
+                <button type="button" class="nes-btn" data-accelerate-back>返回选择</button>
+                <button type="button" id="mineRestartBtn" class="nes-btn is-warning">重新开始</button>
+            </div>
+        </section>
+
+        <section class="accelerate-screen" data-accelerate-screen="gomoku">
+            <div class="gomoku-game-head">
+                <div>
+                    <strong>五子棋挑战</strong>
+                    <p>你执黑先手，鸭鸭执白后手。战胜鸭鸭即可加速。</p>
+                </div>
+                <div class="gomoku-turn-box">
+                    <span>当前回合</span>
+                    <strong id="gomokuTurnText">黑棋</strong>
+                </div>
+            </div>
+            <div id="gomokuBoard" class="gomoku-board" aria-label="五子棋棋盘"></div>
+            <p class="gomoku-status" id="gomokuStatusText">点击棋盘落下黑棋。</p>
+            <div class="accelerate-actions two">
+                <button type="button" class="nes-btn" data-accelerate-back>返回选择</button>
+                <button type="button" id="gomokuRestartBtn" class="nes-btn is-warning">重新开始</button>
+            </div>
+        </section>
+
+        <section class="accelerate-screen" data-accelerate-screen="result">
+            <div class="accelerate-result-card">
+                <div class="accelerate-result-icon">✓</div>
+                <h3 id="accelerateResultTitle">挑战成功</h3>
+                <p id="accelerateResultMessage">鸭鸭本次进食已加速 1 小时，并获得 60g 饲料。</p>
+            </div>
+            <div class="accelerate-actions two">
+                <button type="button" id="accelerateResultStayBtn" class="nes-btn">关闭弹窗</button>
+                <button type="button" id="accelerateResultHomeBtn" class="nes-btn is-success">返回鸭舍查看进度</button>
+            </div>
+        </section>
+    </div>
+</div>
+{% endif %}

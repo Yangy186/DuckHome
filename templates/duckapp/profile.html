@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="profile-page">
+    <section class="profile-hero">
+        <div class="profile-avatar" aria-label="用户头像">{{ user.username|first|upper }}</div>
+        <div class="profile-main">
+            <p class="profile-kicker">我的主页</p>
+            <h2>{{ user.username }}</h2>
+            <p>加入明湖鸭舍：{{ user.date_joined|date:"Y/m/d" }}</p>
+            <div class="profile-tags">
+                <span>饲料 {{ profile.feed_grams }}g</span>
+                <span>收集 {{ profile.total_eggs }} 颗蛋</span>
+                <span>分享 {{ own_photos_count }} 张照片</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="profile-stat-grid">
+        <div class="profile-stat-card">
+            <strong>{{ common_eggs }}</strong>
+            <span>明湖暖蛋</span>
+        </div>
+        <div class="profile-stat-card">
+            <strong>{{ rare_eggs }}</strong>
+            <span>星露蓝蛋</span>
+        </div>
+        <div class="profile-stat-card">
+            <strong>{{ legendary_eggs }}</strong>
+            <span>金冠彩蛋</span>
+        </div>
+        <div class="profile-stat-card">
+            <strong>{{ feedback_count }}</strong>
+            <span>提交反馈</span>
+        </div>
+    </section>
+
+    <section class="profile-section">
+        <div class="profile-section-head">
+            <h3>🥚 收藏的蛋</h3>
+            <span>{{ collected_eggs|length }} 枚</span>
+        </div>
+        <div class="profile-egg-grid">
+            {% for egg in collected_eggs %}
+            <article class="profile-egg-card rarity-{{ egg.rarity }}">
+                <img src="{% static 'duck/' %}{{ egg.image_name }}" alt="{{ egg.rarity_name }}">
+                <strong>{{ egg.rarity_name }}</strong>
+                <span>{{ egg.rarity_label }} · {{ egg.laid_at|date:"m/d H:i" }}</span>
+            </article>
+            {% empty %}
+            <div class="profile-empty">还没有收藏鸭蛋，等鸭鸭消化完饲料就有机会收获啦～</div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="profile-section">
+        <div class="profile-section-head">
+            <h3>❤️ 点赞过的照片墙</h3>
+            <a href="{% url 'community' %}">去社区看看</a>
+        </div>
+        <div class="profile-liked-wall">
+            {% for photo in liked_photos %}
+            <a class="profile-liked-photo" href="{% url 'community' %}" title="{{ photo.user.username }} 的照片">
+                <img src="{{ photo.image.url }}" alt="点赞过的照片" loading="lazy">
+                <span>{{ photo.user.username }}</span>
+            </a>
+            {% empty %}
+            <div class="profile-empty">还没有点赞过照片，去社区给喜欢的照片点个赞吧～</div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="profile-section profile-feedback">
+        <div class="profile-section-head">
+            <h3>💬 反馈</h3>
+            <span>建议、问题、想要的新功能都可以写在这里</span>
+        </div>
+        <form method="post" class="profile-feedback-form">
+            {% csrf_token %}
+            <textarea name="feedback" maxlength="500" rows="4" placeholder="比如：想给鸭鸭加一个新的衣服、小游戏有点难、页面哪里不好看……" required></textarea>
+            <input type="text" name="contact" maxlength="120" placeholder="联系方式（选填）">
+            <button type="submit" class="nes-btn is-success">提交反馈</button>
+        </form>
+    </section>
+</div>
+
+{% endblock %}

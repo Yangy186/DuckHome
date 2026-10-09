@@ -1,0 +1,250 @@
+:root {
+    --primary: #f29ab5;
+    --secondary: #ffd59e;
+    --accent: #9fd8b0;
+    --primary-fg: #fff;
+    --body-fg: #5c4637;
+    --body-bg: #fff8ef;
+    --body-quiet-color: #8b7668;
+    --body-loud-color: #4f3c31;
+    --header-color: #5c4637;
+    --header-branding-color: #5c4637;
+    --header-bg: rgba(255, 251, 245, 0.96);
+    --header-link-color: #7d6a5c;
+    --breadcrumbs-bg: #fff4f7;
+    --breadcrumbs-fg: #7d6a5c;
+    --link-fg: #bd5f7f;
+    --link-hover-color: #8a4f5f;
+    --link-selected-fg: #8a4f5f;
+    --hairline-color: rgba(126, 106, 92, 0.14);
+    --border-color: rgba(126, 106, 92, 0.16);
+    --error-fg: #b4475c;
+    --message-success-bg: #ecfbf0;
+    --message-warning-bg: #fff2dc;
+    --message-error-bg: #ffeaee;
+    --darkened-bg: #fff3f6;
+    --selected-bg: #fff0df;
+    --selected-row: #fff6ea;
+    --button-fg: #fff;
+    --button-bg: #f29ab5;
+    --button-hover-bg: #e383a4;
+    --default-button-bg: #9fd8b0;
+    --default-button-hover-bg: #82c799;
+    --close-button-bg: #ffd6dc;
+    --close-button-hover-bg: #ffb0c0;
+    --delete-button-bg: #ff9cae;
+    --delete-button-hover-bg: #ef7f96;
+    --object-tools-fg: #fff;
+    --object-tools-bg: #f4a85f;
+    --object-tools-hover-bg: #e8984d;
+    --font-family-primary: "Inter", "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+    --font-family-monospace: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+body {
+    background:
+        radial-gradient(circle at top left, rgba(255, 214, 227, 0.45), transparent 32%),
+        radial-gradient(circle at top right, rgba(255, 236, 198, 0.55), transparent 28%),
+        linear-gradient(180deg, #fffdf8 0%, #fff8ef 44%, #fff5f8 100%);
+    color: var(--body-fg);
+    font-family: var(--font-family-primary);
+}
+
+#header {
+    border-bottom: 1px solid var(--hairline-color);
+    box-shadow: 0 10px 24px rgba(93, 70, 55, 0.06);
+    min-height: 58px;
+}
+
+#branding h1,
+#branding h1 a:link,
+#branding h1 a:visited {
+    color: #5c4637;
+    font-weight: 900;
+    letter-spacing: 0;
+}
+
+#user-tools {
+    color: #7d6a5c;
+    font-size: 12px;
+}
+
+#user-tools a {
+    border-bottom-color: rgba(189, 95, 127, 0.35);
+}
+
+div.breadcrumbs {
+    border-bottom: 1px solid rgba(126, 106, 92, 0.10);
+    color: #7d6a5c;
+}
+
+#content {
+    padding: 24px;
+}
+
+#content h1 {
+    color: #5c4637;
+    font-size: 24px;
+    font-weight: 900;
+}
+
+.module,
+.inline-group,
+.selector,
+.submit-row,
+.paginator,
+#changelist,
+#changelist-filter {
+    background: linear-gradient(135deg, rgba(255, 250, 244, 0.96), rgba(255, 244, 247, 0.96));
+    border: 1px solid rgba(126, 106, 92, 0.14);
+    border-radius: 18px;
+    box-shadow: 0 16px 36px rgba(123, 94, 63, 0.08);
+    overflow: hidden;
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+    background: linear-gradient(90deg, #f7b7c9 0%, #ffd59e 100%);
+    color: #fff;
+    font-weight: 900;
+    letter-spacing: 0;
+}
+
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+thead th {
+    background: #fff7ee;
+    border-bottom: 1px solid rgba(126, 106, 92, 0.12);
+    color: #6a584b;
+}
+
+tbody tr:nth-child(odd) {
+    background: rgba(255, 255, 255, 0.55);
+}
+
+tbody tr:hover {
+    background: #fff0df;
+}
+
+td,
+th {
+    border-bottom-color: rgba(126, 106, 92, 0.10);
+}
+
+input,
+textarea,
+select,
+.vTextField {
+    border: 1px solid rgba(126, 106, 92, 0.18);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.86);
+    color: #5c4637;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: #f29ab5;
+    box-shadow: 0 0 0 3px rgba(242, 154, 181, 0.18);
+}
+
+.button,
+input[type=submit],
+input[type=button],
+.submit-row input,
+a.button,
+.object-tools a,
+#changelist .actions button {
+    border: 0;
+    border-radius: 999px;
+    box-shadow: 0 8px 16px rgba(93, 70, 55, 0.08);
+    font-weight: 800;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.button:hover,
+input[type=submit]:hover,
+input[type=button]:hover,
+.submit-row input:hover,
+a.button:hover,
+.object-tools a:hover,
+#changelist .actions button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 22px rgba(93, 70, 55, 0.10);
+}
+
+.object-tools a {
+    background: linear-gradient(90deg, #ffd59e 0%, #f4a85f 100%);
+}
+
+input.default,
+.submit-row input.default {
+    background: linear-gradient(90deg, #ccefd7 0%, #9fd8b0 100%);
+    color: #476250;
+}
+
+.deletelink,
+.submit-row a.deletelink {
+    background: linear-gradient(90deg, #ffd6dc 0%, #ffb0c0 100%);
+    border-radius: 999px;
+    color: #8a4f5f;
+}
+
+.messagelist li {
+    border: 1px solid rgba(126, 106, 92, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 10px 24px rgba(93, 70, 55, 0.06);
+}
+
+#changelist-filter h2 {
+    background: linear-gradient(90deg, #f7b7c9 0%, #ffd59e 100%);
+    color: #fff;
+}
+
+#changelist-filter li.selected {
+    border-left: 4px solid #f29ab5;
+}
+
+.login #container {
+    background: linear-gradient(135deg, #fffaf4 0%, #fff4f7 55%, #eef9ff 100%);
+    border: 1px solid rgba(126, 106, 92, 0.14);
+    border-radius: 24px;
+    box-shadow: 0 16px 36px rgba(123, 94, 63, 0.10);
+    overflow: hidden;
+}
+
+.login #header {
+    background: transparent;
+    box-shadow: none;
+}
+
+.aligned label {
+    color: #7d6a5c;
+    font-weight: 700;
+}
+
+.help,
+p.help,
+form p,
+div.help,
+div.help li {
+    color: #8b7668;
+}
+
+@media (max-width: 767px) {
+    #content {
+        padding: 16px 10px;
+    }
+
+    .module,
+    .inline-group,
+    #changelist,
+    #changelist-filter {
+        border-radius: 14px;
+    }
+}
+

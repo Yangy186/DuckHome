@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦆 明湖鸭舍</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260703-outfit-choice-1">
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="top-nav">
+        <div class="nav-inner">
+            <a href="{% url 'yard' %}" class="nav-brand">🦆 明湖鸭舍</a>
+            <div class="nav-links">
+                {% if user.is_authenticated %}
+                    <span class="nav-user">👋 {{ user.username }}</span>
+                    <a href="{% url 'yard' %}" class="nes-btn is-primary btn-sm">🏠 鸭舍</a>
+                    <a href="{% url 'profile' %}" class="nes-btn btn-sm">👤 我的主页</a>
+                    <a href="{% url 'community' %}" class="nes-btn is-warning btn-sm">📷 社区</a>
+                    <a href="{% url 'stats' %}" class="nes-btn btn-sm">📊 记录</a>
+                    <form method="post" action="{% url 'logout' %}" style="display:inline">
+                        {% csrf_token %}
+                        <button type="submit" class="nes-btn is-error btn-sm">🚪 离开</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nes-btn is-primary btn-sm">登录</a>
+                    <a href="{% url 'register' %}" class="nes-btn btn-sm">注册</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- 消息提示 -->
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="nes-balloon from-left message-{{ message.tags }}">
+            <p>{{ message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 主体内容 -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- ── 鸭鸭聊天弹窗 ── -->
+    {% if user.is_authenticated %}
+    <div class="chat-overlay" id="chatOverlay">
+        <div class="chat-dialog">
+            <!-- 头部 -->
+            <div class="chat-header">
+                <span class="chat-avatar">🦆</span>
+                <span class="chat-title">和明湖鸭鸭聊天</span>
+                <button class="chat-close" id="chatClose">✕</button>
+            </div>
+            <!-- 消息区 -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-msg duck-msg">
+                    <span class="msg-avatar">🦆</span>
+                    <div class="msg-bubble">嘎～你好！我是明湖鸭鸭，欢迎来找我聊天嘎！</div>
+                </div>
+            </div>
+            <!-- 输入区 -->
+            <div class="chat-input-row">
+                <input type="text" class="chat-input" id="chatInput"
+                       placeholder="和鸭鸭说点什么吧～" maxlength="200">
+                <button class="chat-send-btn" id="chatSend">发送</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 页脚 -->
+    <footer class="site-footer">
+        <p>🦆 北京交通大学 · 明湖鸭舍 · 每一颗蛋都为鸭鸭赢得一份粮食 🦆</p>
+    </footer>
+
+    <script src="{% static 'js/main.js' %}?v=20260704-snake-middle-high-100"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

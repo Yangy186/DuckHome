@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="stats-page">
+    <h2 class="section-title">📊 {{ user.username }} 的鸭鸭记录</h2>
+
+    <div class="stats-grid">
+        <div class="nes-container with-title is-dark stat-card">
+            <p class="title">🦆 我的鸭鸭</p>
+            <div class="stat-big-icon">🦆</div>
+            <p>名字：<strong>{{ profile.duck_name }}</strong></p>
+            <p>剩余饲料：<strong>{{ profile.feed_grams }}g</strong></p>
+        </div>
+
+        <div class="nes-container with-title is-dark stat-card">
+            <p class="title">🥚 产蛋记录</p>
+            <div class="stat-number">{{ collected }}</div>
+            <p>累计收集鸭蛋</p>
+        </div>
+
+        <div class="nes-container with-title is-dark stat-card">
+            <p class="title">🍞 贡献统计</p>
+            <div class="stat-number">{{ collected }}</div>
+            <p>为明湖鸭鸭赢得的粮食份数 🎉</p>
+        </div>
+
+        <div class="nes-container with-title is-dark stat-card">
+            <p class="title">📷 照片贡献</p>
+            <div class="stat-number">{{ photos_count }}</div>
+            <p>分享的可爱照片</p>
+        </div>
+    </div>
+
+    <div class="center-btn">
+        <a href="{% url 'yard' %}" class="nes-btn is-primary">🏠 回鸭舍</a>
+        <a href="{% url 'community' %}" class="nes-btn is-warning">📷 去社区</a>
+    </div>
+</div>
+
+{% endblock %}

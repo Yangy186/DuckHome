@@ -1,0 +1,61 @@
+{% load static %}
+<!-- 鸭鸭 + 蛋 共享片段 -->
+<div class="duck-container js-duck {% if is_feeding %}duck-feeding{% endif %} {% if is_sleeping %}duck-sleeping{% endif %}">
+
+    <!-- 睡觉时：ZZZ 漂浮 -->
+    {% if is_sleeping %}
+    <div class="sleep-zzz-container">
+        <span class="sleep-z z1">Z</span>
+        <span class="sleep-z z2">Z</span>
+        <span class="sleep-z z3">z</span>
+    </div>
+    {% endif %}
+
+    <!-- 鸭蛋：悬浮在鸭鸭周围（睡觉时不显示蛋） -->
+    {% if not is_sleeping %}
+    {% for egg in uncollected_eggs %}
+    <a href="{% url 'collect_egg' egg.id %}?scene={{ current_scene|default:'minghu' }}"
+       class="egg-item egg-pos-{{ forloop.counter }} egg-rarity-{{ egg.rarity }}"
+       title="点击收蛋：{{ egg.rarity_label }} · {{ egg.rarity_name }}">
+        <img class="egg-icon egg-img" src="{% static 'duck/' %}{{ egg.image_name }}" alt="{{ egg.rarity_name }}">
+        <span class="egg-click-hint">{{ egg.rarity_label }}</span>
+    </a>
+    {% endfor %}
+    {% endif %}
+
+    <!-- 真实鸭鸭图片 -->
+    <div class="duck-img-wrap">
+        <div class="duck-avatar-stage">
+            <!-- 睡帽 -->
+            {% if is_sleeping %}
+            <div class="duck-nightcap">
+                <div class="nightcap-body"></div>
+                <div class="nightcap-pompom"></div>
+            </div>
+            {% endif %}
+
+            <img src="{% static 'images/' %}{{ duck_img }}" alt="{{ duck_mood }}" class="duck-img">
+
+            <!-- 睡觉闭眼 -->
+            {% if is_sleeping %}
+            <div class="sleep-eyes">
+                <span class="sleep-eye"></span>
+                <span class="sleep-eye"></span>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if is_sleeping %}
+        <span class="duck-mood-tag">💤 睡觉中...</span>
+        {% elif duck_mood %}
+        <span class="duck-mood-tag">{{ duck_mood }}</span>
+        {% endif %}
+    </div>
+
+    <!-- 睡觉小窝 -->
+    {% if is_sleeping %}
+    <div class="duck-nest"></div>
+    {% else %}
+    <div class="duck-shadow-soft"></div>
+    {% endif %}
+</div>

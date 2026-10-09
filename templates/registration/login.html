@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-center">
+    <div class="auth-card">
+        <div class="duck-icon-big">🦆</div>
+        <h2>欢迎回鸭舍</h2>
+        <p class="sub">明湖鸭鸭在等你～</p>
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+            {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+            <div class="nes-field">
+                <label>用户名</label>
+                <input type="text" name="username" class="nes-input" required autofocus>
+            </div>
+            <div class="nes-field">
+                <label>密码</label>
+                <input type="password" name="password" class="nes-input" required>
+            </div>
+            {% if form.errors %}
+            <div class="nes-text is-error">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}{{ error }}<br>{% endfor %}
+                {% endfor %}
+            </div>
+            {% endif %}
+            <button type="submit" class="nes-btn is-primary btn-full">🦆 进入鸭舍</button>
+        </form>
+        <p class="auth-footer">还没有鸭鸭？<a href="{% url 'register' %}">来领养一只吧！</a></p>
+    </div>
+</div>
+{% endblock %}

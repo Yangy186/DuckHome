@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+<div class="community-page">
+
+    <!-- ── 管理员工具栏 ── -->
+    {% if is_staff %}
+    <div class="admin-toolbar nes-container is-dark">
+        <span class="admin-badge-icon">🛡️</span>
+        <span class="admin-toolbar-title">管理员模式</span>
+        <span class="admin-toolbar-hint">你可以置顶优质帖子、删除违规帖子，你的评论会显示管理员标识</span>
+    </div>
+    {% endif %}
+
+    <!-- ── 上传区域 ── -->
+    <div class="nes-container with-title upload-card">
+        <p class="title">📸 分享动物可爱照片</p>
+        <p class="upload-desc">上传一张动物照片，通过审核即可获得 <strong>180g</strong> 饲料！</p>
+        <form method="post" enctype="multipart/form-data" class="upload-form">
+            {% csrf_token %}
+            <div class="upload-row">
+                <label class="nes-btn is-primary upload-btn-label">
+                    🖼️ 选择照片
+                    <input type="file" name="image" accept="image/*" required hidden
+                           onchange="this.parentElement.nextElementSibling.textContent=this.files[0]?.name||'未选择文件'">
+                </label>
+                <span class="file-name">未选择文件</span>
+            </div>
+            <div class="nes-field">
+                <input type="text" name="description" class="nes-input"
+                       placeholder="给你的照片写句话吧（选填）~" maxlength="200">
+            </div>
+            <button type="submit" class="nes-btn is-success btn-full">
+                📤 分享照片，领取 180g 饲料！
+            </button>
+        </form>
+        <p class="audit-note">💡 照片上传后自动通过（模拟AI审核），饲料即时到账～</p>
+    </div>
+
+    <!-- ── 照片墙 ── -->
+    <h3 class="section-title">🖼️ 社区照片墙</h3>
+    <div class="photo-feed" id="photoFeed">
+        {% for photo in photos %}
+        <div class="photo-card-full nes-container is-rounded {% if photo.is_pinned %}photo-pinned{% endif %}"
+             data-photo-id="{{ photo.id }}">
+            <!-- 置顶标识 -->
+            {% if photo.is_pinned %}
+            <div class="pinned-badge">📌 置顶</div>
+            {% endif %}
+
+            <!-- 照片 -->
+            <div class="photo-card-img-wrap">
+                <img src="{{ photo.image.url }}" alt="社区照片" loading="lazy" class="photo-card-img">
+            </div>
+
+            <!-- 照片信息栏 -->
+            <div class="photo-card-bar">
+                <span class="photo-card-user">📷 {{ photo.user.username }}</span>
+                {% if photo.description %}
+                <span class="photo-card-desc">"{{ photo.description }}"</span>
+                {% endif %}
+                <span class="photo-card-time">{{ photo.uploaded_at|date:"m/d H:i" }}</span>
+            </div>
+
+            <!-- 互动按钮区 -->
+            <div class="photo-card-actions">
+                <!-- 点赞 -->
+                <button class="like-btn {% if photo.user_liked %}liked{% endif %}"
+                        onclick="toggleLike({{ photo.id }}, this)">
+                    <span class="like-icon">{% if photo.user_liked %}❤️{% else %}🤍{% endif %}</span>
+                    <span class="like-count">{{ photo.like_count }}</span>
+                </button>
+
+                <!-- 评论按钮 -->
+                <button class="comment-toggle-btn" onclick="toggleComments({{ photo.id }}, this)">
+                    💬 <span class="comment-count-badge">{{ photo.comment_count }}</span>
+                </button>
+
+                <!-- ── 管理员操作按钮 ── -->
+                {% if is_staff %}
+                <div class="admin-actions">
+                    <button class="admin-btn pin-btn" onclick="togglePin({{ photo.id }}, this)"
+                            title="{% if photo.is_pinned %}取消置顶{% else %}置顶{% endif %}">
+                        {% if photo.is_pinned %}📌取消置顶{% else %}📌置顶{% endif %}
+                    </button>
+                    <button class="admin-btn del-btn" onclick="deletePhoto({{ photo.id }}, this)"
+                            title="删除帖子">🗑️</button>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- 评论区（默认隐藏） -->
+            <div class="comment-section" id="comments-{{ photo.id }}" style="display:none">
+                <div class="comment-list" id="commentList-{{ photo.id }}">
+                    {% for comment in photo.comment_list %}
+                    <div class="comment-item" data-comment-id="{{ comment.id }}">
+                        <strong>
+                            {{ comment.user.username }}
+                            {% if comment.is_admin %}
+                            <span class="admin-tag">管理员</span>
+                            {% endif %}
+                        </strong>
+                        <span class="comment-text">{{ comment.text }}</span>
+                        <span class="comment-time">{{ comment.created_at|date:"m/d H:i" }}</span>
+                        {% if comment.user_id == user.id %}
+                        <button class="comment-del-btn" onclick="deleteComment({{ photo.id }}, {{ comment.id }}, this)"
+                                title="删除">✕</button>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <!-- 发评论 -->
+                <div class="comment-input-row">
+                    <input type="text" class="comment-input" placeholder="写评论..."
+                           id="commentInput-{{ photo.id }}" maxlength="300"
+                           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addComment({{ photo.id }})}">
+                    <button class="comment-send-btn" onclick="addComment({{ photo.id }})">发送</button>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-big">
+            <p class="empty-icon">📷</p>
+            <p>还没有人分享照片～来做社区第一个分享者吧！🦆</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const CSRF_TOKEN = '{{ csrf_token }}';
+const IS_STAFF = {{ is_staff|yesno:"true,false" }};
+
+// ── 点赞 ──
+async function toggleLike(photoId, btn) {
+    try {
+        const resp = await fetch(`/like/${photoId}/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+        });
+        const data = await resp.json();
+        btn.querySelector('.like-icon').textContent = data.liked ? '❤️' : '🤍';
+        btn.querySelector('.like-count').textContent = data.count;
+        btn.classList.toggle('liked', data.liked);
+        if (data.liked) {
+            btn.style.transform = 'scale(1.3)';
+            setTimeout(() => btn.style.transform = '', 200);
+        }
+    } catch(e) { console.error(e); }
+}
+
+// ── 评论展开/收起 ──
+function toggleComments(photoId, btn) {
+    const section = document.getElementById('comments-' + photoId);
+    const isHidden = section.style.display === 'none';
+    section.style.display = isHidden ? 'block' : 'none';
+    if (isHidden) {
+        section.querySelector('.comment-input').focus();
+    }
+}
+
+// ── 发表评论 ──
+async function addComment(photoId) {
+    const input = document.getElementById('commentInput-' + photoId);
+    const text = input.value.trim();
+    if (!text) return;
+    input.disabled = true;
+
+    try {
+        const resp = await fetch(`/comment/${photoId}/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+            body: JSON.stringify({ text: text }),
+        });
+        const data = await resp.json();
+        if (data.error) { alert(data.error); return; }
+
+        const list = document.getElementById('commentList-' + photoId);
+        const item = document.createElement('div');
+        item.className = 'comment-item comment-new';
+        item.setAttribute('data-comment-id', data.id);
+
+        const adminTag = data.is_staff ? '<span class="admin-tag">管理员</span> ' : '';
+        item.innerHTML = `<strong>${data.user} ${adminTag}</strong>
+            <span class="comment-text">${escapeHtml(data.text)}</span>
+            <span class="comment-time">${data.time}</span>
+            <button class="comment-del-btn" onclick="deleteComment(${photoId}, ${data.id}, this)" title="删除">✕</button>`;
+        list.appendChild(item);
+
+        input.value = '';
+        updateCommentCount(photoId);
+    } catch(e) { console.error(e); }
+    input.disabled = false;
+}
+
+// ── 删除评论 ──
+async function deleteComment(photoId, commentId, btn) {
+    if (!confirm('删除这条评论？')) return;
+    try {
+        const resp = await fetch(`/comment/${photoId}/`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+            body: JSON.stringify({ comment_id: commentId }),
+        });
+        const data = await resp.json();
+        if (data.deleted) {
+            btn.closest('.comment-item').remove();
+            updateCommentCount(photoId);
+        } else if (data.error) {
+            alert(data.error);
+        }
+    } catch(e) { console.error(e); }
+}
+
+// ── 管理员：置顶/取消置顶 ──
+async function togglePin(photoId, btn) {
+    try {
+        const resp = await fetch(`/pin/${photoId}/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+        });
+        const data = await resp.json();
+        if (data.error) { alert(data.error); return; }
+
+        const card = btn.closest('.photo-card-full');
+        if (data.pinned) {
+            card.classList.add('photo-pinned');
+            btn.textContent = '📌取消置顶';
+            // 插入置顶徽章
+            if (!card.querySelector('.pinned-badge')) {
+                const badge = document.createElement('div');
+                badge.className = 'pinned-badge';
+                badge.textContent = '📌 置顶';
+                card.prepend(badge);
+            }
+            // 卡片置顶动画
+            card.style.transform = 'scale(1.02)';
+            setTimeout(() => card.style.transform = '', 300);
+        } else {
+            card.classList.remove('photo-pinned');
+            btn.textContent = '📌置顶';
+            const badge = card.querySelector('.pinned-badge');
+            if (badge) badge.remove();
+        }
+    } catch(e) { console.error(e); }
+}
+
+// ── 管理员：删除帖子 ──
+async function deletePhoto(photoId, btn) {
+    if (!confirm('确定要删除这个帖子吗？此操作不可撤销！')) return;
+    try {
+        const resp = await fetch(`/delete-photo/${photoId}/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+        });
+        const data = await resp.json();
+        if (data.error) { alert(data.error); return; }
+        if (data.deleted) {
+            const card = btn.closest('.photo-card-full');
+            card.style.transition = 'all 0.35s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.9)';
+            card.style.maxHeight = card.offsetHeight + 'px';
+            requestAnimationFrame(() => {
+                card.style.maxHeight = '0';
+                card.style.padding = '0';
+                card.style.margin = '0';
+                card.style.borderWidth = '0';
+            });
+            setTimeout(() => card.remove(), 400);
+        }
+    } catch(e) { console.error(e); }
+}
+
+function updateCommentCount(photoId) {
+    const list = document.getElementById('commentList-' + photoId);
+    const count = list.querySelectorAll('.comment-item').length;
+    const card = list.closest('.photo-card-full');
+    const badge = card.querySelector('.comment-count-badge');
+    if (badge) badge.textContent = count;
+}
+
+function escapeHtml(text) {
+    const d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
+}
+</script>
+{% endblock %}

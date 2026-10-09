@@ -1,0 +1,1333 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<style>
+/* 今日形象换装模块：更柔和、更像小衣橱 */
+.dress-box {
+    margin-bottom: 18px;
+    padding: 18px;
+    border-radius: 28px;
+    background: linear-gradient(135deg, #fffaf4 0%, #fff4f7 55%, #eef9ff 100%);
+    border: 2px solid rgba(126, 106, 92, 0.12);
+    box-shadow: 0 16px 36px rgba(123, 94, 63, 0.10);
+}
+
+.dress-topbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: flex-end;
+    margin-bottom: 16px;
+}
+
+.dress-title-wrap {
+    max-width: 650px;
+}
+
+.dress-title {
+    margin: 0;
+    font-size: 24px;
+    color: #5c4637;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.dress-subtitle {
+    margin: 6px 0 0;
+    color: #7d6a5c;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.dress-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.dress-badge {
+    padding: 6px 11px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(126, 106, 92, 0.10);
+    color: #6f5d50;
+    font-size: 12px;
+}
+
+.dress-badge.unlock-ready {
+    background: linear-gradient(90deg, #fff3b7 0%, #ffd6e2 100%);
+    color: #865537;
+}
+
+.dress-unlock-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding: 12px;
+    border-radius: 18px;
+    border: 1px solid rgba(126, 106, 92, 0.10);
+    background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(255,244,218,0.92));
+}
+
+.dress-unlock-card.locked {
+    background: linear-gradient(135deg, rgba(255,255,255,0.86), rgba(238,238,238,0.82));
+}
+
+.dress-unlock-info {
+    display: grid;
+    gap: 4px;
+    color: #5c4637;
+}
+
+.dress-unlock-info strong {
+    font-size: 15px;
+}
+
+.dress-unlock-info span {
+    color: #7d6a5c;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.dress-set-btn {
+    flex: 0 0 auto;
+    border: 0;
+    border-radius: 999px;
+    padding: 9px 12px;
+    background: linear-gradient(90deg, #ffd36c 0%, #ff9bb4 100%);
+    color: #fff;
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    box-shadow: 0 8px 16px rgba(180, 112, 76, 0.14);
+}
+
+.dress-set-btn:disabled {
+    cursor: not-allowed;
+    background: #d8d3cc;
+    color: #7f756d;
+    box-shadow: none;
+}
+
+.dress-layout {
+    display: grid;
+    grid-template-columns: minmax(340px, 1fr) minmax(340px, 1fr);
+    gap: 14px;
+    align-items: stretch;
+}
+
+.dress-preview,
+.dress-wardrobe {
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.76);
+    border: 1px solid rgba(126, 106, 92, 0.12);
+    box-shadow: 0 10px 24px rgba(93, 70, 55, 0.06);
+    overflow: hidden;
+}
+
+.dress-preview {
+    position: relative;
+    min-height: 560px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.dress-preview-scene {
+    position: relative;
+    flex: 1;
+    min-height: 470px;
+    border-radius: 22px;
+    overflow: hidden;
+    background: linear-gradient(180deg, #fff9f0 0%, #fef5df 58%, #e9f7ef 100%);
+    border: 1px solid rgba(126, 106, 92, 0.08);
+}
+
+.dress-cloud {
+    position: absolute;
+    top: 20px;
+    width: 64px;
+    height: 22px;
+    background: #fff;
+    border-radius: 999px;
+    box-shadow: 18px -6px 0 4px #fff, 36px 1px 0 2px #fff, 10px 10px 0 4px #f5f5f5;
+    opacity: 0.9;
+}
+
+.dress-cloud.left { left: 20px; }
+.dress-cloud.right { right: 16px; top: 34px; transform: scale(0.9); }
+
+.dress-sun {
+    position: absolute;
+    right: 20px;
+    top: 18px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fff3a4, #ffd778 55%, #f6b84c 100%);
+    box-shadow: 0 0 20px rgba(255, 208, 104, 0.45);
+}
+
+.dress-ground {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 30%;
+    background: linear-gradient(180deg, rgba(170, 223, 168, 0.22), rgba(110, 190, 110, 0.30));
+}
+
+.dress-stage {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dress-duck-frame {
+    position: relative;
+    width: 240px;
+    height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dress-duck-frame::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 10px;
+    width: 150px;
+    height: 22px;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at center, rgba(123, 94, 63, 0.14), transparent 70%);
+}
+
+.dress-layer {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    object-fit: contain;
+    transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+#dress-base {
+    width: 240px;
+    top: 28px;
+    z-index: 1;
+    filter: drop-shadow(0 10px 0 rgba(123, 94, 63, 0.08));
+}
+
+#dress-hat {
+    width: 100px;
+    top: 8px;
+    z-index: 4;
+}
+
+#dress-cloth {
+    width: 175px;
+    top: 92px;
+    z-index: 3;
+}
+
+#dress-shoe {
+    width: 160px;
+    top: 130px;
+    z-index: 2;
+}
+
+.dress-layer.pop {
+    transform: translateX(-50%) translateY(-4px);
+}
+
+.dress-preview-note {
+    margin-top: 10px;
+    text-align: center;
+    color: #7d6a5c;
+    font-size: 12px;
+}
+
+.duck-outfit-layer {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    object-fit: contain;
+    pointer-events: none;
+    z-index: 12;
+}
+
+.duck-avatar-stage {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    flex: 0 0 auto;
+}
+
+.duck-avatar-stage .duck-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    z-index: 1;
+}
+
+.duck-jump {
+    animation: duckJumpCute 0.55s ease;
+}
+
+.duck-container.duck-jump {
+    animation: duckJumpCute 0.55s ease;
+}
+
+@keyframes duckJumpCute {
+    0% { transform: translateX(-50%) translateY(0); }
+    30% { transform: translateX(-50%) translateY(-8px); }
+    60% { transform: translateX(-50%) translateY(-2px); }
+    100% { transform: translateX(-50%) translateY(0); }
+}
+
+.duck-outfit-hat {
+    top: -6px;
+    width: 42%;
+    z-index: 4;
+}
+
+.duck-outfit-cloth {
+    top: 25px;
+    width: 73%;
+    z-index: 3;
+}
+
+.duck-outfit-shoe {
+    top: 40px;
+    width: 67%;
+    z-index: 2;
+}
+
+.dress-wardrobe {
+    padding: 16px 16px 14px;
+    height: 560px;
+    min-height: 560px;
+    max-height: 560px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.dress-wardrobe-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    color: #5c4637;
+    font-weight: 800;
+    font-size: 18px;
+}
+
+.dress-wardrobe-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 8px;
+    scrollbar-color: #ffb7a8 rgba(255, 255, 255, 0.58);
+    scrollbar-width: thin;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+}
+
+.dress-wardrobe-scroll::-webkit-scrollbar {
+    width: 10px;
+}
+
+.dress-wardrobe-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.58);
+    border-radius: 999px;
+}
+
+.dress-wardrobe-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #ffc2b3, #ff9fb5);
+    border: 2px solid rgba(255, 255, 255, 0.72);
+    border-radius: 999px;
+}
+
+.dress-category {
+    margin-bottom: 14px;
+    padding: 12px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.84);
+    border: 1px solid rgba(126, 106, 92, 0.08);
+    flex: 0 0 auto;
+}
+
+.dress-wardrobe > .dress-category:last-of-type {
+    margin-bottom: 0;
+}
+
+.dress-wardrobe > .dress-btn-group {
+    margin-top: auto;
+}
+
+.dress-cat-name {
+    font-size: 14px;
+    color: #6a584b;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dress-item-group {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.dress-item {
+    min-height: 142px;
+    appearance: none;
+    border: 2px solid rgba(126, 106, 92, 0.12);
+    background: linear-gradient(180deg, #fffdf8 0%, #fff7ec 100%);
+    border-radius: 16px;
+    cursor: pointer;
+    padding: 8px 6px 6px;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    display: grid;
+    gap: 6px;
+    align-content: start;
+    justify-items: center;
+}
+
+.dress-item:hover {
+    transform: translateY(-2px);
+    border-color: rgba(160, 123, 87, 0.30);
+    box-shadow: 0 8px 18px rgba(123, 94, 63, 0.10);
+}
+
+.dress-item.locked,
+.dress-item:disabled {
+    cursor: not-allowed;
+    opacity: 0.56;
+    filter: grayscale(0.35);
+}
+
+.dress-item.locked:hover,
+.dress-item:disabled:hover {
+    transform: none;
+    border-color: rgba(126, 106, 92, 0.12);
+    box-shadow: none;
+}
+
+.dress-item.locked[data-unlockable="true"] {
+    cursor: pointer;
+}
+
+.dress-item.locked[data-unlockable="true"]:hover {
+    border-color: rgba(240, 169, 107, 0.35);
+    box-shadow: 0 8px 18px rgba(123, 94, 63, 0.08);
+}
+
+.dress-item.active {
+    border-color: #f0a96b;
+    box-shadow: 0 0 0 3px rgba(240, 169, 107, 0.18);
+    transform: translateY(-1px);
+}
+
+.dress-item img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    display: block;
+}
+
+.dress-item-placeholder {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, rgba(255, 238, 215, 0.92), rgba(236, 247, 255, 0.92));
+    color: #9b6b4d;
+    font-size: 13px;
+    font-weight: 800;
+    text-align: center;
+    padding: 6px;
+}
+
+.dress-item-placeholder[hidden] {
+    display: none;
+}
+
+.dress-item span {
+    font-size: 12px;
+    color: #7d6a5c;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.dress-lock-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 18px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.86);
+    color: #9b6b4d;
+    font-size: 10px;
+    line-height: 1.2;
+}
+
+.dress-btn-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.dress-save, .dress-reset {
+    border: none;
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-family: inherit;
+    cursor: pointer;
+    font-size: 14px;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    box-shadow: 0 8px 16px rgba(93, 70, 55, 0.08);
+}
+
+.dress-save {
+    background: linear-gradient(90deg, #ffb8c8 0%, #ff8fb0 100%);
+    color: #fff;
+}
+
+.dress-reset {
+    background: linear-gradient(90deg, #eef5ff 0%, #d8ecff 100%);
+    color: #5c7086;
+}
+
+.dress-save:hover, .dress-reset:hover {
+    transform: translateY(-1px);
+}
+
+.dress-save:active, .dress-reset:active {
+    transform: translateY(0);
+}
+
+.dress-hint {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #8b7768;
+    text-align: center;
+}
+
+@media (max-width: 900px) {
+    .dress-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .dress-preview {
+        min-height: 460px;
+    }
+
+    .dress-preview-scene {
+        min-height: 360px;
+    }
+
+    .dress-wardrobe {
+        height: 560px;
+        min-height: 560px;
+        max-height: 70vh;
+    }
+}
+
+@media (max-width: 650px) {
+    .dress-box {
+        padding: 14px;
+    }
+
+    .dress-item-group {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dress-preview-scene {
+        min-height: 320px;
+    }
+}
+</style>
+
+<div class="yard-container">
+
+    <!-- ========== 新增：今日形象 · 鸭鸭衣橱 ========== -->
+    <div class="dress-box">
+        <div class="dress-topbar">
+            <div class="dress-title-wrap">
+                <h2 class="dress-title">🦆 今日形象 · 鸭鸭衣橱</h2>
+                <p class="dress-subtitle">给鸭鸭挑一套今天的穿搭吧，保存之后，鸭舍里的鸭鸭会自动变成这套可爱造型。</p>
+            </div>
+            <div class="dress-badges">
+                <span class="dress-badge">✨ 点击即试穿</span>
+                <span class="dress-badge">💾 保存后全局同步</span>
+                <span class="dress-badge unlock-ready" id="dressUnlockBadge">🥚 每 {{ outfit_unlock_eggs_required }} 颗蛋解锁 1 件</span>
+            </div>
+        </div>
+
+        <div class="dress-layout">
+            <div class="dress-preview">
+                <div class="dress-preview-scene">
+                    <div class="dress-cloud left"></div>
+                    <div class="dress-cloud right"></div>
+                    <div class="dress-sun"></div>
+                    <div class="dress-ground"></div>
+                    <div class="dress-stage">
+                        <div class="dress-duck-frame">
+                            <img id="dress-base" class="dress-layer" src="{% static 'duck/duck_base.png' %}" alt="鸭鸭本体">
+                            <img id="dress-hat" class="dress-layer" src="" >
+                            <img id="dress-cloth" class="dress-layer" src="" >
+                            <img id="dress-shoe" class="dress-layer" src="" >
+                        </div>
+                    </div>
+                </div>
+                <div class="dress-preview-note" id="dress-preview-name">当前穿搭：原生鸭鸭</div>
+            </div>
+
+            <div class="dress-wardrobe">
+                <div class="dress-wardrobe-title">🧺 小衣橱</div>
+
+                <div class="dress-wardrobe-scroll">
+                <div class="dress-unlock-card {% if outfit_unlocked %}unlocked{% else %}locked{% endif %}">
+                    <div class="dress-unlock-info">
+                        <strong>🥚 蛋愿限定衣橱</strong>
+                        <span id="dressUnlockInfo">每收集 {{ outfit_unlock_eggs_required }} 颗蛋，可以选择解锁 1 件锁定服饰。</span>
+                    </div>
+                    <button type="button" class="dress-set-btn" onclick="focusLockedOutfits()">选择解锁</button>
+                </div>
+
+                <div class="dress-category">
+                    <div class="dress-cat-name">👒 帽子</div>
+                    <div class="dress-item-group">
+                        <button class="dress-item" data-type="hat" data-src="{% static 'duck/hat_study.png' %}" data-name="学士帽">
+                            <img src="{% static 'duck/thumbs/hat_study.png' %}" alt="学士帽">
+                            <span>学士帽</span>
+                        </button>
+                        <button class="dress-item" data-type="hat" data-src="{% static 'duck/hat_crown.png' %}" data-name="小皇冠">
+                            <img src="{% static 'duck/thumbs/hat_crown.png' %}" alt="小皇冠">
+                            <span>小皇冠</span>
+                        </button>
+                        <button class="dress-item" data-type="hat" data-src="{% static 'duck/hat_beret.png' %}" data-name="贝雷帽">
+                            <img src="{% static 'duck/thumbs/hat_beret.png' %}" alt="贝雷帽">
+                            <span>贝雷帽</span>
+                        </button>
+                        <button class="dress-item locked" data-type="hat" data-src="{% static 'duck/hat_lotus.png' %}" data-name="莲叶渔夫帽" data-unlockable="true" aria-disabled="true">
+                            <img src="{% static 'duck/thumbs/hat_lotus.png' %}" alt="莲叶渔夫帽" onerror="this.hidden=true; this.nextElementSibling.hidden=false;">
+                            <span class="dress-item-placeholder" hidden>莲叶<br>渔夫帽</span>
+                            <span>莲叶渔夫帽</span>
+                            <span class="dress-lock-tag">🔒 待解锁</span>
+                        </button>
+                        <button class="dress-item locked" data-type="hat" data-src="{% static 'duck/hat_sailor.png' %}" data-name="水手小帽" data-unlockable="true" aria-disabled="true">
+                            <img src="{% static 'duck/thumbs/hat_sailor.png' %}" alt="水手小帽" onerror="this.hidden=true; this.nextElementSibling.hidden=false;">
+                            <span class="dress-item-placeholder" hidden>水手<br>小帽</span>
+                            <span>水手小帽</span>
+                            <span class="dress-lock-tag">🔒 待解锁</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dress-category">
+                    <div class="dress-cat-name">👗 上衣</div>
+                    <div class="dress-item-group">
+                        <button class="dress-item" data-type="cloth" data-src="{% static 'duck/cloth_graduation.png' %}" data-name="学士服">
+                            <img src="{% static 'duck/thumbs/cloth_graduation.png' %}" alt="学士服">
+                            <span>学士服</span>
+                        </button>
+                        <button class="dress-item" data-type="cloth" data-src="{% static 'duck/cloth_skirt.png' %}" data-name="小裙子">
+                            <img src="{% static 'duck/thumbs/cloth_skirt.png' %}" alt="小裙子">
+                            <span>小裙子</span>
+                        </button>
+                        <button class="dress-item" data-type="cloth" data-src="{% static 'duck/cloth_beidai.png' %}" data-name="背带款">
+                            <img src="{% static 'duck/thumbs/cloth_beidai.png' %}" alt="背带款">
+                            <span>背带款</span>
+                        </button>
+                        <button class="dress-item locked" data-type="cloth" data-src="{% static 'duck/cloth_raincoat.png' %}" data-name="明湖小雨衣" data-unlockable="true" aria-disabled="true">
+                            <img src="{% static 'duck/thumbs/cloth_raincoat.png' %}" alt="明湖小雨衣" onerror="this.hidden=true; this.nextElementSibling.hidden=false;">
+                            <span class="dress-item-placeholder" hidden>明湖<br>雨衣</span>
+                            <span>明湖小雨衣</span>
+                            <span class="dress-lock-tag">🔒 待解锁</span>
+                        </button>
+                        <button class="dress-item locked" data-type="cloth" data-src="{% static 'duck/cloth_labcoat.png' %}" data-name="科研白袍" data-unlockable="true" aria-disabled="true">
+                            <img src="{% static 'duck/thumbs/cloth_labcoat.png' %}" alt="科研白袍" onerror="this.hidden=true; this.nextElementSibling.hidden=false;">
+                            <span class="dress-item-placeholder" hidden>科研<br>白袍</span>
+                            <span>科研白袍</span>
+                            <span class="dress-lock-tag">🔒 待解锁</span>
+                        </button>
+                        <button class="dress-item locked" data-type="cloth" data-src="{% static 'duck/cloth_sailor.png' %}" data-name="水手披肩" data-unlockable="true" aria-disabled="true">
+                            <img src="{% static 'duck/thumbs/cloth_sailor.png' %}" alt="水手披肩" onerror="this.hidden=true; this.nextElementSibling.hidden=false;">
+                            <span class="dress-item-placeholder" hidden>水手<br>披肩</span>
+                            <span>水手披肩</span>
+                            <span class="dress-lock-tag">🔒 待解锁</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dress-category">
+                    <div class="dress-cat-name">👟 鞋子</div>
+                    <div class="dress-item-group">
+                        <button class="dress-item" data-type="shoe" data-src="{% static 'duck/shoe_brown.png' %}" data-name="小皮鞋">
+                            <img src="{% static 'duck/thumbs/shoe_brown.png' %}" alt="小皮鞋">
+                            <span>小皮鞋</span>
+                        </button>
+                        <button class="dress-item" data-type="shoe" data-src="{% static 'duck/shoe_white.png' %}" data-name="小白鞋">
+                            <img src="{% static 'duck/thumbs/shoe_white.png' %}" alt="小白鞋">
+                            <span>小白鞋</span>
+                        </button>
+                        <button class="dress-item" data-type="shoe" data-src="{% static 'duck/shoe_sneaker.png' %}" data-name="运动鞋">
+                            <img src="{% static 'duck/thumbs/shoe_sneaker.png' %}" alt="运动鞋">
+                            <span>运动鞋</span>
+                        </button>
+                        <button class="dress-item locked" data-type="shoe" data-src="{% static 'duck/shoe_rainboot.png' %}" data-name="小雨靴" data-unlockable="true" aria-disabled="true">
+                            <img src="{% static 'duck/thumbs/shoe_rainboot.png' %}" alt="小雨靴" onerror="this.hidden=true; this.nextElementSibling.hidden=false;">
+                            <span class="dress-item-placeholder" hidden>小<br>雨靴</span>
+                            <span>小雨靴</span>
+                            <span class="dress-lock-tag">🔒 待解锁</span>
+                        </button>
+                        <button class="dress-item locked" data-type="shoe" data-src="{% static 'duck/shoe_maryjane.png' %}" data-name="玛丽珍" data-unlockable="true" aria-disabled="true">
+                            <img src="{% static 'duck/thumbs/shoe_maryjane.png' %}" alt="玛丽珍" onerror="this.hidden=true; this.nextElementSibling.hidden=false;">
+                            <span class="dress-item-placeholder" hidden>玛丽<br>珍</span>
+                            <span>玛丽珍</span>
+                            <span class="dress-lock-tag">🔒 待解锁</span>
+                        </button>
+                        <button class="dress-item locked" data-type="shoe" data-src="{% static 'duck/shoe_skate.png' %}" data-name="滑板鞋" data-unlockable="true" aria-disabled="true">
+                            <img src="{% static 'duck/thumbs/shoe_skate.png' %}" alt="滑板鞋" onerror="this.hidden=true; this.nextElementSibling.hidden=false;">
+                            <span class="dress-item-placeholder" hidden>滑板<br>鞋</span>
+                            <span>滑板鞋</span>
+                            <span class="dress-lock-tag">🔒 待解锁</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dress-btn-group">
+                    <button type="button" class="dress-save" onclick="saveDuckOutfit()">💾 保存当前穿搭</button>
+                    <button type="button" class="dress-reset" onclick="resetDuckOutfit()">🧼 恢复原生鸭鸭</button>
+                </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <!-- ── 场景切换器 ── -->
+    <div class="scene-switcher">
+        {% for scene in scenes %}
+        <a href="?scene={{ scene.key }}" class="scene-tab {% if current_scene == scene.key %}active{% endif %}"
+           title="🦆 {{ scene.duck_mood }}">
+            <span class="scene-tab-icon">{{ scene.icon }}</span>
+            <span class="scene-tab-label">{{ scene.name }}</span>
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- ── 场景区域 ── -->
+    <div class="scene-wrapper weather-{{ weather.type }}">
+        <!-- 时间光照叠加层 -->
+        <div class="time-overlay" id="timeOverlay"></div>
+        <!-- 天气特效层（雨/雪/雾/雷） -->
+        <div class="weather-layer"></div>
+        <!-- 天气徽章 -->
+        <div class="weather-badge" title="北京真实天气">{{ weather.icon }} {{ weather.desc }} {{ weather.temp }}°C</div>
+
+        <!-- ═══════════════ 场景1: 明湖 ═══════════════ -->
+        <div class="scene scene-minghu {% if current_scene == 'minghu' %}scene-active{% endif %}" id="scene-minghu">
+            <img class="scene-bg-photo" src="{% static 'duck/minghu.png' %}" alt="" aria-hidden="true"
+                 style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:35;pointer-events:none;">
+            <div class="scene-label">🌊 明湖 · 鸭鸭的家</div>
+            <!-- 天空 -->
+            <div class="sky">
+                <div class="cloud cloud-a"></div>
+                <div class="cloud cloud-b"></div>
+                <div class="sun"></div>
+            </div>
+            <!-- 思源楼远景 -->
+            <div class="bld-siyuan-far">
+                <div class="bld-siyuan-far-body">
+                    <span class="win" style="top:4px;left:6px"></span><span class="win" style="top:4px;left:18px"></span>
+                    <span class="win" style="top:4px;left:30px"></span><span class="win" style="top:18px;left:6px"></span>
+                    <span class="win" style="top:18px;left:18px"></span><span class="win" style="top:18px;left:30px"></span>
+                </div>
+            </div>
+            <!-- 柳树 -->
+            <div class="willow">
+                <div class="willow-trunk"></div>
+                <div class="willow-crown"></div>
+                <div class="willow-drop wd1"></div>
+                <div class="willow-drop wd2"></div>
+                <div class="willow-drop wd3"></div>
+            </div>
+            <!-- 鸭子游泳 -->
+            <div class="lake-scene">
+                <div class="lake-ripple r1"></div>
+                <div class="lake-ripple r2"></div>
+                <div class="lake-ripple r3"></div>
+                <div class="shore-line"></div>
+            </div>
+            <!-- 鸭鸭+蛋 -->
+            <div class="duck-spot">
+                {% include 'duckapp/_duck_and_eggs.html' %}
+            </div>
+        </div>
+
+        <!-- ═══════════════ 场景2: 思源楼广场 ═══════════════ -->
+        <div class="scene scene-siyuan {% if current_scene == 'siyuan' %}scene-active{% endif %}" id="scene-siyuan">
+            <img class="scene-bg-photo" src="{% static 'duck/siyuanlou.png' %}" alt="" aria-hidden="true"
+                 style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:35;pointer-events:none;">
+            <div class="scene-label">🏛️ 思源楼广场 · 北交地标</div>
+            <div class="sky sky-siyuan">
+                <div class="cloud cloud-a" style="top:20px;left:60%"></div>
+                <div class="sun" style="top:15px;right:30px"></div>
+            </div>
+            <!-- 思源楼主楼 -->
+            <div class="bld-siyuan-main">
+                <div class="siyuan-tower">
+                    <div class="siyuan-roof"></div>
+                    <div class="siyuan-clock"></div>
+                    <div class="siyuan-body">
+                        <span class="win" style="top:8px;left:8px"></span><span class="win" style="top:8px;left:28px"></span><span class="win" style="top:8px;left:48px"></span>
+                        <span class="win" style="top:32px;left:8px"></span><span class="win" style="top:32px;left:28px"></span><span class="win" style="top:32px;left:48px"></span>
+                        <span class="win" style="top:56px;left:8px"></span><span class="win" style="top:56px;left:28px"></span><span class="win" style="top:56px;left:48px"></span>
+                    </div>
+                </div>
+                <!-- 侧楼 -->
+                <div class="siyuan-wing wing-left"></div>
+                <div class="siyuan-wing wing-right"></div>
+            </div>
+            <!-- 广场喷泉 -->
+            <div class="fountain">
+                <div class="fountain-base"></div>
+                <div class="fountain-spray s1"></div>
+                <div class="fountain-spray s2"></div>
+                <div class="fountain-spray s3"></div>
+            </div>
+            <!-- 地面 + 树 -->
+            <div class="plaza-ground"></div>
+            <div class="plaza-tree pt1"></div>
+            <div class="plaza-tree pt2"></div>
+            <!-- 鸭鸭 -->
+            <div class="duck-spot">
+                {% include 'duckapp/_duck_and_eggs.html' %}
+            </div>
+        </div>
+
+        <!-- ═══════════════ 场景3: 图书馆 ═══════════════ -->
+        <div class="scene scene-library {% if current_scene == 'library' %}scene-active{% endif %}" id="scene-library">
+            <img class="scene-bg-photo" src="{% static 'duck/tushuguan.png' %}" alt="" aria-hidden="true"
+                 style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:35;pointer-events:none;">
+            <div class="scene-label">📚 图书馆 · 知识的海洋</div>
+            <div class="sky">
+                <div class="cloud cloud-a" style="top:30px;left:20%"></div>
+                <div class="cloud cloud-b" style="top:15px;left:55%"></div>
+            </div>
+            <!-- 图书馆建筑 -->
+            <div class="bld-library">
+                <div class="lib-main">
+                    <div class="lib-roof"></div>
+                    <div class="lib-body">
+                        <span class="lib-win-row" style="top:5px">▯▯▯▯▯</span>
+                        <span class="lib-win-row" style="top:20px">▯▯▯▯▯</span>
+                        <span class="lib-win-row" style="top:35px">▯▯▯▯▯</span>
+                    </div>
+                    <div class="lib-door"></div>
+                </div>
+            </div>
+            <!-- 草坪 -->
+            <div class="lib-lawn"></div>
+            <div class="lib-bush b1"></div>
+            <div class="lib-bush b2"></div>
+            <!-- 鸭鸭 -->
+            <div class="duck-spot">
+                {% include 'duckapp/_duck_and_eggs.html' %}
+            </div>
+        </div>
+
+        <!-- ═══════════════ 场景4: 银杏大道 ═══════════════ -->
+        <div class="scene scene-ginkgo {% if current_scene == 'ginkgo' %}scene-active{% endif %}" id="scene-ginkgo">
+            <img class="scene-bg-photo" src="{% static 'duck/yinxingdadao.png' %}" alt="" aria-hidden="true"
+                 style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:35;pointer-events:none;">
+            <div class="scene-label">🍂 银杏大道 · 金秋北交</div>
+            <div class="sky sky-ginkgo">
+                <div class="cloud cloud-a" style="top:25px;left:30%"></div>
+                <div class="sun" style="top:20px;right:50px;width:35px;height:35px"></div>
+            </div>
+            <!-- 银杏树 -->
+            <div class="ginkgo-tree gt1">
+                <div class="ginkgo-trunk"></div>
+                <div class="ginkgo-crown"></div>
+            </div>
+            <div class="ginkgo-tree gt2">
+                <div class="ginkgo-trunk"></div>
+                <div class="ginkgo-crown"></div>
+            </div>
+            <div class="ginkgo-tree gt3">
+                <div class="ginkgo-trunk"></div>
+                <div class="ginkgo-crown"></div>
+            </div>
+            <!-- 飘落银杏叶 -->
+            <div class="ginkgo-leaf gl1">🍂</div>
+            <div class="ginkgo-leaf gl2">🍂</div>
+            <div class="ginkgo-leaf gl3">🍂</div>
+            <div class="ginkgo-leaf gl4">🍂</div>
+            <div class="ginkgo-leaf gl5">🍂</div>
+            <!-- 道路 -->
+            <div class="ginkgo-path"></div>
+            <div class="ginkgo-ground"></div>
+            <!-- 鸭鸭 -->
+            <div class="duck-spot">
+                {% include 'duckapp/_duck_and_eggs.html' %}
+            </div>
+        </div>
+
+        <!-- ═══════════════ 场景5: 芳华园 ═══════════════ -->
+        <div class="scene scene-garden {% if current_scene == 'garden' %}scene-active{% endif %}" id="scene-garden">
+            <img class="scene-bg-photo" src="{% static 'duck/fanghuayuan.png' %}" alt="" aria-hidden="true"
+                 style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:35;pointer-events:none;">
+            <div class="scene-label">🌸 芳华园 · 花园小憩</div>
+            <div class="sky sky-garden">
+                <div class="cloud cloud-a" style="top:15px;left:50%"></div>
+                <div class="butterfly bf1">🦋</div>
+                <div class="butterfly bf2">🦋</div>
+            </div>
+            <!-- 亭子 -->
+            <div class="pavilion">
+                <div class="pavilion-roof">
+                    <div class="pavilion-top"></div>
+                </div>
+                <div class="pavilion-pillars">
+                    <span class="pillar"></span><span class="pillar"></span>
+                </div>
+                <div class="pavilion-base"></div>
+            </div>
+            <!-- 小桥 -->
+            <div class="garden-bridge">
+                <div class="bridge-arch"></div>
+                <div class="bridge-rail"></div>
+            </div>
+            <!-- 花丛 -->
+            <div class="flower-cluster fc1">
+                <span>🌸</span><span>🌼</span><span>🌺</span>
+            </div>
+            <div class="flower-cluster fc2">
+                <span>🌷</span><span>🌻</span><span>💐</span>
+            </div>
+            <div class="flower-cluster fc3">
+                <span>🌼</span><span>🌸</span>
+            </div>
+            <!-- 池塘 -->
+            <div class="garden-pond">
+                <div class="pond-lily">🪷</div>
+                <div class="pond-lily" style="left:60%;top:40%">🪷</div>
+            </div>
+            <div class="garden-grass"></div>
+            <!-- 鸭鸭 -->
+            <div class="duck-spot">
+                {% include 'duckapp/_duck_and_eggs.html' %}
+            </div>
+        </div>
+
+        <!-- ═══════════════ 场景6: 运动场 ═══════════════ -->
+        <div class="scene scene-sports {% if current_scene == 'sports' %}scene-active{% endif %}" id="scene-sports">
+            <img class="scene-bg-photo" src="{% static 'duck/yundongchang.png' %}" alt="" aria-hidden="true"
+                 style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:35;pointer-events:none;">
+            <div class="scene-label">⚽ 运动场 · 挥洒汗水</div>
+            <div class="sky">
+                <div class="cloud cloud-a" style="top:20px;left:40%"></div>
+                <div class="sun" style="top:10px;right:40px"></div>
+            </div>
+            <!-- 看台 -->
+            <div class="grandstand">
+                <div class="gs-roof"></div>
+                <div class="gs-seats">
+                    <div class="gs-row"></div>
+                    <div class="gs-row"></div>
+                    <div class="gs-row"></div>
+                </div>
+            </div>
+            <!-- 跑道 -->
+            <div class="track">
+                <div class="track-lane"></div>
+                <div class="track-lane"></div>
+                <div class="track-lane"></div>
+            </div>
+            <!-- 足球场 -->
+            <div class="football-field">
+                <div class="field-line fl-center"></div>
+                <div class="field-line fl-circle"></div>
+                <span class="goal-post" style="left:5%;top:50%">🥅</span>
+                <span class="goal-post" style="right:5%;top:50%">🥅</span>
+            </div>
+            <!-- 鸭鸭 -->
+            <div class="duck-spot">
+                {% include 'duckapp/_duck_and_eggs.html' %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── 控制面板 ── -->
+    <div class="panel-row">
+        {% include 'duckapp/_feed_panel.html' %}
+        {% include 'duckapp/_egg_panel.html' %}
+    </div>
+
+    <!-- 最近社区照片 -->
+    <div class="nes-container with-title photo-preview">
+        <p class="title">📷 社区新鲜事</p>
+        <div class="photo-mini-row">
+            {% for photo in recent_photos %}
+                <div class="photo-mini-card">
+                    <img src="{{ photo.image.url }}" alt="社区照片" loading="lazy">
+                    <span class="photo-author">{{ photo.user.username }}</span>
+                </div>
+            {% empty %}
+                <p class="empty-hint">还没有人分享照片～来做第一个吧！🦆</p>
+            {% endfor %}
+        </div>
+        <a href="{% url 'community' %}" class="nes-btn is-primary btn-sm">📷 去社区看看</a>
+    </div>
+
+</div>
+
+<!-- 换装交互JS：本地存储+整页鸭鸭同步 -->
+<script>
+const DRESS_STORAGE_KEY = 'duckOutfit';
+const DRESS_UNLOCKED_ASSETS_STORAGE_KEY = 'duckUnlockedOutfits';
+const DRESS_UNLOCK_REQUIRED = {{ outfit_unlock_eggs_required }};
+const DRESS_UNLOCK_LEFT = {{ outfit_unlock_eggs_left }};
+const DRESS_TOTAL_EGGS = {{ collected_eggs }};
+const DRESS_UNLOCK_SLOTS = {{ outfit_unlock_slots }};
+const DRESS_UNLOCKABLE_ASSETS = [
+    "{% static 'duck/hat_lotus.png' %}",
+    "{% static 'duck/hat_sailor.png' %}",
+    "{% static 'duck/cloth_raincoat.png' %}",
+    "{% static 'duck/cloth_labcoat.png' %}",
+    "{% static 'duck/cloth_sailor.png' %}",
+    "{% static 'duck/shoe_rainboot.png' %}",
+    "{% static 'duck/shoe_maryjane.png' %}",
+    "{% static 'duck/shoe_skate.png' %}",
+];
+const DRESS_DEFAULT = {
+    hat: '',
+    cloth: '',
+    shoe: '',
+    name: '原生鸭鸭',
+};
+
+function getDressItems() {
+    return Array.from(document.querySelectorAll('.dress-item'));
+}
+
+function normalizeUnlockableAsset(src) {
+    return DRESS_UNLOCKABLE_ASSETS.find(target => sameAsset(src, target)) || '';
+}
+
+function loadUnlockedAssets() {
+    try {
+        const parsed = JSON.parse(localStorage.getItem(DRESS_UNLOCKED_ASSETS_STORAGE_KEY) || '[]');
+        const unique = [];
+        parsed.forEach(src => {
+            const normalized = normalizeUnlockableAsset(src);
+            if (normalized && !unique.includes(normalized)) unique.push(normalized);
+        });
+        const limited = unique.slice(0, DRESS_UNLOCK_SLOTS);
+        localStorage.setItem(DRESS_UNLOCKED_ASSETS_STORAGE_KEY, JSON.stringify(limited));
+        return limited;
+    } catch (err) {
+        localStorage.removeItem(DRESS_UNLOCKED_ASSETS_STORAGE_KEY);
+        return [];
+    }
+}
+
+let unlockedDressAssets = loadUnlockedAssets();
+
+function saveUnlockedAssets() {
+    localStorage.setItem(DRESS_UNLOCKED_ASSETS_STORAGE_KEY, JSON.stringify(unlockedDressAssets));
+}
+
+function getSceneDucks() {
+    return Array.from(document.querySelectorAll('.duck-img'));
+}
+
+function sameAsset(src, target) {
+    return Boolean(src && target && (src === target || src.endsWith(target)));
+}
+
+function isUnlockableAsset(src) {
+    return Boolean(normalizeUnlockableAsset(src));
+}
+
+function isAssetUnlocked(src) {
+    const normalized = normalizeUnlockableAsset(src);
+    return Boolean(normalized && unlockedDressAssets.includes(normalized));
+}
+
+function isLockedAsset(src) {
+    return isUnlockableAsset(src) && !isAssetUnlocked(src);
+}
+
+function outfitHasUnavailablePart(outfit) {
+    return ['hat', 'cloth', 'shoe'].some(type => isLockedAsset(outfit[type]));
+}
+
+function sanitizeOutfit(outfit) {
+    if (!outfit) return DRESS_DEFAULT;
+    const safe = { ...outfit };
+    ['hat', 'cloth', 'shoe'].forEach(type => {
+        if (isLockedAsset(safe[type])) safe[type] = '';
+    });
+    if (outfitHasUnavailablePart(outfit)) {
+        safe.name = DRESS_DEFAULT.name;
+        safe.activeType = '';
+        safe.activeSrc = '';
+    }
+    return safe;
+}
+
+function getUnlocksLeft() {
+    return Math.max(0, DRESS_UNLOCK_SLOTS - unlockedDressAssets.length);
+}
+
+function getNextUnlockEggsLeft() {
+    const remainder = DRESS_TOTAL_EGGS % DRESS_UNLOCK_REQUIRED;
+    return remainder === 0 ? DRESS_UNLOCK_REQUIRED : DRESS_UNLOCK_REQUIRED - remainder;
+}
+
+function setLockTag(item, text) {
+    let tag = item.querySelector('.dress-lock-tag');
+    if (!tag) {
+        tag = document.createElement('span');
+        tag.className = 'dress-lock-tag';
+        item.appendChild(tag);
+    }
+    tag.textContent = text;
+}
+
+function refreshUnlockUI() {
+    getDressItems().forEach(item => {
+        if (item.dataset.unlockable !== 'true') return;
+        const unlocked = isAssetUnlocked(item.dataset.src);
+        item.classList.toggle('locked', !unlocked);
+        item.setAttribute('aria-disabled', unlocked ? 'false' : 'true');
+        if (unlocked) {
+            item.querySelectorAll('.dress-lock-tag').forEach(tag => tag.remove());
+        } else {
+            setLockTag(item, getUnlocksLeft() > 0 ? '🔓 可解锁' : '🔒 待解锁');
+        }
+    });
+
+    const info = document.getElementById('dressUnlockInfo');
+    const badge = document.getElementById('dressUnlockBadge');
+    const left = getUnlocksLeft();
+    const used = unlockedDressAssets.length;
+    if (info) {
+        info.textContent = `已收集 ${DRESS_TOTAL_EGGS} 颗蛋，共有 ${DRESS_UNLOCK_SLOTS} 个解锁名额，已解锁 ${used} 件，剩余 ${left} 个。`;
+    }
+    if (badge) {
+        badge.textContent = left > 0 ? `🥚 可选择解锁 ${left} 件` : `🥚 再收集 ${getNextUnlockEggsLeft()} 颗蛋获得 1 个名额`;
+    }
+
+    document.querySelectorAll('.dress-unlock-card').forEach(card => {
+        card.classList.toggle('unlocked', left > 0);
+        card.classList.toggle('locked', left <= 0);
+    });
+}
+
+function focusLockedOutfits() {
+    const firstLocked = getDressItems().find(item => item.dataset.unlockable === 'true' && item.classList.contains('locked'));
+    if (firstLocked) {
+        firstLocked.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function unlockDressItem(item) {
+    const asset = normalizeUnlockableAsset(item.dataset.src);
+    if (!asset) return true;
+    if (isAssetUnlocked(asset)) return true;
+    if (getUnlocksLeft() <= 0) {
+        alert(`解锁名额不够啦。再收集 ${getNextUnlockEggsLeft()} 颗蛋，就能再解锁 1 件服饰～`);
+        return false;
+    }
+    const ok = confirm(`要用 1 个解锁名额解锁「${item.dataset.name}」吗？`);
+    if (!ok) return false;
+    unlockedDressAssets.push(asset);
+    saveUnlockedAssets();
+    refreshUnlockUI();
+    alert(`「${item.dataset.name}」已解锁，可以试穿啦～`);
+    return true;
+}
+
+function setActiveCard(activeType, activeSrc) {
+    getDressItems().forEach(item => {
+        const isActive = item.dataset.type === activeType && item.dataset.src === activeSrc;
+        item.classList.toggle('active', isActive);
+    });
+}
+
+function setPreview(outfit) {
+    const hat = document.getElementById('dress-hat');
+    const cloth = document.getElementById('dress-cloth');
+    const shoe = document.getElementById('dress-shoe');
+    const label = document.getElementById('dress-preview-name');
+    if (hat) hat.src = outfit.hat || '';
+    if (cloth) cloth.src = outfit.cloth || '';
+    if (shoe) shoe.src = outfit.shoe || '';
+    if (label) {
+        const parts = [];
+        if (outfit.hat) parts.push('帽子');
+        if (outfit.cloth) parts.push('衣服');
+        if (outfit.shoe) parts.push('鞋子');
+        label.textContent = parts.length ? `当前穿搭：${parts.join(' + ')}` : '当前穿搭：原生鸭鸭';
+    }
+}
+
+function triggerDuckJump(duckWrap) {
+    duckWrap.classList.remove('duck-jump');
+    void duckWrap.offsetWidth;
+    duckWrap.classList.add('duck-jump');
+    duckWrap.addEventListener('animationend', () => duckWrap.classList.remove('duck-jump'), { once: true });
+}
+
+function ensureDuckOutfitLayers(duckWrap) {
+    let hat = duckWrap.querySelector('.duck-outfit-hat');
+    let cloth = duckWrap.querySelector('.duck-outfit-cloth');
+    let shoe = duckWrap.querySelector('.duck-outfit-shoe');
+    const stage = duckWrap.querySelector('.duck-avatar-stage') || duckWrap.querySelector('.duck-img-wrap');
+
+    if (!hat) {
+        hat = document.createElement('img');
+        hat.className = 'duck-outfit-layer duck-outfit-hat';
+        hat.alt = '鸭鸭帽子';
+        stage.appendChild(hat);
+    }
+    if (!cloth) {
+        cloth = document.createElement('img');
+        cloth.className = 'duck-outfit-layer duck-outfit-cloth';
+        cloth.alt = '鸭鸭衣服';
+        stage.appendChild(cloth);
+    }
+    if (!shoe) {
+        shoe = document.createElement('img');
+        shoe.className = 'duck-outfit-layer duck-outfit-shoe';
+        shoe.alt = '鸭鸭鞋子';
+        stage.appendChild(shoe);
+    }
+
+    return { hat, cloth, shoe };
+}
+
+function applyOutfitToYard(outfit) {
+    getSceneDucks().forEach(img => {
+        if (!img.dataset.baseSrc) {
+            img.dataset.baseSrc = img.getAttribute('src');
+        }
+        img.src = outfit.base || img.dataset.baseSrc;
+        img.alt = outfit.name || DRESS_DEFAULT.name;
+
+        const wrap = img.closest('.duck-container');
+        if (wrap) {
+            const layers = ensureDuckOutfitLayers(wrap);
+            layers.hat.src = outfit.hat || '';
+            layers.cloth.src = outfit.cloth || '';
+            layers.shoe.src = outfit.shoe || '';
+            layers.hat.style.display = outfit.hat ? 'block' : 'none';
+            layers.cloth.style.display = outfit.cloth ? 'block' : 'none';
+            layers.shoe.style.display = outfit.shoe ? 'block' : 'none';
+            triggerDuckJump(wrap);
+        }
+    });
+
+    setPreview(outfit);
+    if (outfit.activeType && outfit.activeSrc) {
+        setActiveCard(outfit.activeType, outfit.activeSrc);
+    } else {
+        getDressItems().forEach(item => item.classList.remove('active'));
+    }
+    window.currentDuckOutfit = outfit;
+}
+
+function saveDuckOutfit() {
+    const outfit = {
+        hat: document.getElementById('dress-hat').src || '',
+        cloth: document.getElementById('dress-cloth').src || '',
+        shoe: document.getElementById('dress-shoe').src || '',
+        name: '鸭鸭换装完成',
+        base: "{% static 'duck/duck_base.png' %}",
+    };
+
+    if (outfitHasUnavailablePart(outfit)) {
+        alert('这套造型里有还没解锁的部件，已经帮你先清掉啦～');
+        applyOutfitToYard(sanitizeOutfit(outfit));
+        return;
+    }
+
+    const safeOutfit = sanitizeOutfit(outfit);
+    localStorage.setItem(DRESS_STORAGE_KEY, JSON.stringify(safeOutfit));
+    applyOutfitToYard(safeOutfit);
+    alert('✨ 鸭鸭已经换好新穿搭啦，鸭舍里的小鸭会一起同步哦～');
+}
+
+function resetDuckOutfit() {
+    localStorage.removeItem(DRESS_STORAGE_KEY);
+    applyOutfitToYard(DRESS_DEFAULT);
+    window.currentDuckOutfit = null;
+    alert('🧼 已恢复成原生鸭鸭，随时可以再换一套～');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    refreshUnlockUI();
+
+    getDressItems().forEach(item => {
+        item.addEventListener('click', () => {
+            if (item.classList.contains('locked')) {
+                if (!unlockDressItem(item)) return;
+            }
+            if (item.classList.contains('locked')) {
+                return;
+            }
+            const outfit = {
+                hat: document.getElementById('dress-hat').src || '',
+                cloth: document.getElementById('dress-cloth').src || '',
+                shoe: document.getElementById('dress-shoe').src || '',
+                base: "{% static 'duck/duck_base.png' %}",
+                name: item.dataset.name || DRESS_DEFAULT.name,
+                activeType: item.dataset.type,
+                activeSrc: item.dataset.src,
+            };
+            if (item.dataset.type === 'hat') outfit.hat = item.dataset.src;
+            if (item.dataset.type === 'cloth') outfit.cloth = item.dataset.src;
+            if (item.dataset.type === 'shoe') outfit.shoe = item.dataset.src;
+            applyOutfitToYard(outfit);
+        });
+    });
+
+    const saved = localStorage.getItem(DRESS_STORAGE_KEY);
+    if (saved) {
+        try {
+            const safeOutfit = sanitizeOutfit(JSON.parse(saved));
+            if (JSON.stringify(safeOutfit) !== saved) {
+                localStorage.setItem(DRESS_STORAGE_KEY, JSON.stringify(safeOutfit));
+            }
+            applyOutfitToYard(safeOutfit);
+        } catch (err) {
+            applyOutfitToYard(DRESS_DEFAULT);
+        }
+    } else {
+        applyOutfitToYard(DRESS_DEFAULT);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% load static %}
+<!-- 鸭蛋统计面板片段 -->
+<div class="nes-container with-title is-dark egg-card">
+    <p class="title">🥚 下蛋进度</p>
+
+    <!-- 消化进度 -->
+    <div class="egg-digest-info">
+        {% if uncollected_eggs %}
+            <p class="egg-ready-text">🥚 有一颗蛋等你来收！</p>
+        {% else %}
+            <p>鸭鸭已消化 <strong>{{ egg_progress_done }}</strong> / <strong>{{ egg_progress_total }}</strong> 份饲料</p>
+        {% endif %}
+    </div>
+
+    <!-- 进度条 -->
+    <div class="egg-progress-bar-outer">
+    <div class="egg-progress-bar-inner" style="width:{{ egg_progress_pct }}%">
+        {% if egg_progress_done == 1 %}
+            <span class="egg-progress-icon">🪺</span>
+        {% elif egg_progress_done == 2 or uncollected_eggs %}
+            <img class="egg-progress-img" src="{% static 'duck/v1.png' %}" alt="鸭蛋">
+        {% endif %}
+        </div>
+    </div>
+
+    <!-- 进度说明 -->
+    <div class="egg-progress-steps">
+        <span class="step {% if egg_progress_done >= 1 or uncollected_eggs %}step-done{% endif %}">
+            {% if egg_progress_done >= 1 or uncollected_eggs %}✅{% else %}①{% endif %} 第1份
+        </span>
+        <span class="step-arrow">→</span>
+        <span class="step {% if uncollected_eggs %}step-done{% elif egg_progress_done >= 2 %}step-done{% endif %}">
+            {% if uncollected_eggs %}✅{% elif egg_progress_done >= 2 %}✅{% else %}②{% endif %} 第2份
+        </span>
+        <span class="step-arrow">→</span>
+        <span class="step {% if uncollected_eggs %}step-egg{% endif %}">
+            🥚 下蛋
+        </span>
+    </div>
+
+    <!-- 累计统计 -->
+    <div class="egg-total">
+        累计收获：<strong>{{ collected_eggs }}</strong> 颗蛋
+        → 为明湖鸭鸭赢得 <strong>{{ collected_eggs }}</strong> 份粮食 🎉
+        <br>
+        {% if outfit_unlocked %}
+            🏆 已解锁蛋愿限定新衣，去衣橱试穿吧！
+        {% else %}
+            👗 再收集 <strong>{{ outfit_unlock_eggs_left }}</strong> 颗蛋解锁蛋愿限定新衣
+        {% endif %}
+    </div>
+
+    <div class="egg-pity-box">
+        <div class="egg-pity-title">连续喂养 <strong>{{ feeding_streak_days }}</strong> 天</div>
+        {% if legendary_pity_left == 0 %}
+            <div class="egg-pity-desc legendary-ready">下一颗蛋必出传说 · 金冠彩蛋</div>
+        {% else %}
+            <div class="egg-pity-desc">距离传说保底还差 <strong>{{ legendary_pity_left }}</strong> 天</div>
+        {% endif %}
+        <div class="egg-pity-track">
+            <div class="egg-pity-fill" style="width:{% widthratio legendary_pity_days legendary_pity_target 100 %}%"></div>
+        </div>
+    </div>
+
+    <button type="button" class="egg-collection-toggle" onclick="document.getElementById('eggCollectionModal').style.display='flex'">
+        <span>🧺 鸭蛋收藏</span>
+        <span class="egg-collection-total">{{ collected_eggs }}</span>
+    </button>
+
+    <div id="eggCollectionModal" class="egg-collection-modal" aria-label="鸭蛋收藏" style="display:none;position:fixed;inset:0;z-index:1200;align-items:center;justify-content:center;padding:22px;">
+        <button type="button" class="egg-collection-backdrop" aria-label="关闭鸭蛋收藏" onclick="document.getElementById('eggCollectionModal').style.display='none'" style="position:absolute;inset:0;border:0;background:rgba(89,57,49,.28);backdrop-filter:blur(8px);"></button>
+        <section class="egg-collection-card" style="position:relative;z-index:1;width:min(760px,94vw);max-height:min(620px,88vh);overflow:auto;padding:24px;border:1px solid rgba(255,178,145,.38);border-radius:28px;background:linear-gradient(145deg,rgba(255,255,255,.97) 0%,#fff1f5 50%,#fff4df 100%);box-shadow:0 30px 80px rgba(142,75,59,.28);">
+            <button type="button" class="egg-collection-close" aria-label="关闭" onclick="document.getElementById('eggCollectionModal').style.display='none'" style="position:absolute;top:14px;right:14px;width:32px;height:32px;border:0;border-radius:999px;background:rgba(255,255,255,.86);color:#b85868;font-size:22px;font-weight:900;cursor:pointer;">×</button>
+            <div class="egg-collection-head">
+                <h3>我的鸭蛋收藏</h3>
+                <p>已收集 <strong>{{ collected_eggs }}</strong> 颗</p>
+            </div>
+
+            <div class="egg-collection-grid" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px;">
+                <article class="egg-collection-tier" style="min-width:0;padding:14px 12px;border:1px solid rgba(255,165,132,.20);border-radius:22px;background:rgba(255,255,255,.72);text-align:center;">
+                    <div class="egg-collection-art" style="display:grid;place-items:center;height:112px;margin-bottom:10px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,242,231,.62));">
+                        <img src="{% static 'duck/v1.png' %}" alt="明湖暖蛋" style="display:block;width:86px;height:86px;max-width:86px;max-height:86px;object-fit:contain;">
+                    </div>
+                    <div class="egg-collection-info">
+                        <span class="egg-tier-label common">普通</span>
+                        <strong>明湖暖蛋</strong>
+                        <p>拥有 {{ common_eggs }} 颗</p>
+                    </div>
+                </article>
+
+                <article class="egg-collection-tier" style="min-width:0;padding:14px 12px;border:1px solid rgba(255,165,132,.20);border-radius:22px;background:rgba(255,255,255,.72);text-align:center;">
+                    <div class="egg-collection-art" style="display:grid;place-items:center;height:112px;margin-bottom:10px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,242,231,.62));">
+                        <img src="{% static 'duck/v2.png' %}" alt="星露蓝蛋" style="display:block;width:86px;height:86px;max-width:86px;max-height:86px;object-fit:contain;">
+                    </div>
+                    <div class="egg-collection-info">
+                        <span class="egg-tier-label rare">稀有</span>
+                        <strong>星露蓝蛋</strong>
+                        <p>拥有 {{ rare_eggs }} 颗</p>
+                    </div>
+                </article>
+
+                <article class="egg-collection-tier legendary" style="min-width:0;padding:14px 12px;border:1px solid rgba(255,165,132,.20);border-radius:22px;background:rgba(255,255,255,.72);text-align:center;">
+                    <div class="egg-collection-art" style="display:grid;place-items:center;height:112px;margin-bottom:10px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,242,231,.62));">
+                        <img src="{% static 'duck/v3.png' %}" alt="金冠彩蛋" style="display:block;width:86px;height:86px;max-width:86px;max-height:86px;object-fit:contain;">
+                    </div>
+                    <div class="egg-collection-info">
+                        <span class="egg-tier-label legendary">传说</span>
+                        <strong>金冠彩蛋</strong>
+                        <p>拥有 {{ legendary_eggs }} 颗</p>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                var modal = document.getElementById('eggCollectionModal');
+                if (modal) modal.style.display = 'none';
+            }
+        });
+        if (window.matchMedia && window.matchMedia('(max-width: 720px)').matches) {
+            var collectionGrid = document.querySelector('#eggCollectionModal .egg-collection-grid');
+            if (collectionGrid) collectionGrid.style.gridTemplateColumns = '1fr';
+        }
+    </script>
+</div>
